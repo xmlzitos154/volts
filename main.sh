@@ -160,7 +160,6 @@ data_fetch() {
     
     local awk_health_script='BEGIN { printf "%.2f", (full/design)*100 }'
     health="$(awk -v full="$charge_full" -v design="$charge_design" "$awk_health_script")"
-    capacity="39"
 }
 
 ### Functions ###
