@@ -15,6 +15,25 @@ chmod +x install.sh
 sudo ./install.sh
 
 ```
+
+**From source with only one command**
+
+```
+git clone https://github.com/xmlzitos154/volts.git && cd volts && chmod +x install.sh && sudo ./install.sh
+
+```
+
+**From AUR**
+
+```bash
+# With yay
+yay -S volts
+
+# With paru
+paru -S volts
+
+```
+
 ---
 
 ## Usage
