@@ -1,6 +1,6 @@
 pkgname=volts
 pkgver=0.1.1
-pkgrel=1
+pkgrel=2
 pkgdesc="A Simple script for show battery status and info"
 arch=('any')
 url="https://github.com/xmlzitos154/volts"
