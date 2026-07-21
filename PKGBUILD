@@ -9,12 +9,6 @@ depends=('bash')
 source=("git+$url.git")
 sha256sums=('SKIP')
 
-pkgver() {
-    cd volts
-    git describe --long --tags 2>/dev/null | sed 's/^v//;s/\([^-]*-g\)/r\1/;s/-/./g' ||
-    printf "r%s.%s" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
-}
-
 package() {
     cd volts
     install -Dm755 main.sh "$pkgdir/usr/bin/volts"
