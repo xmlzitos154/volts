@@ -2,7 +2,7 @@
 
 ## VOLTS - A Simple script for show laptops battery status
 
-version="0.1.1"
+version="0.1.2"
 
 ### Vars ###
 
@@ -12,8 +12,6 @@ GREEN='\033[0;32m'
 CYAN='\033[0;36m'
 BOLD='\033[1m'
 RED='\033[0;31m'
-
-args="$1"
 
 compact_mode=0
 
@@ -26,6 +24,16 @@ style1() {
     for i in $(seq -w 3 15); do
         declare -g "line0$i=$line002"
     done
+    
+    if [[ "$compact_mode" == "1" ]]; then
+        line001="    *******    "
+        line002="***************"
+        
+        for i in $(seq 3 11); do
+            printf -v idx "%02d" "$i"
+            declare -g "line0$idx=$line002"
+        done
+    fi
 }
 
 style2() {
@@ -35,6 +43,16 @@ style2() {
     for i in $(seq -w 3 15); do
         declare -g "line0$i=$line002"
     done
+    
+    if [[ "$compact_mode" == "1" ]]; then
+        line001="    :&&&&&&:    "
+        line002=":&&&&&&&&&&&&&&:"
+        
+        for i in $(seq 3 11); do
+            printf -v idx "%02d" "$i"
+            declare -g "line0$idx=$line002"
+        done
+    fi
 }
 
 style3() {
@@ -45,6 +63,17 @@ style3() {
     for i in $(seq -w 3 15); do
         declare -g "line0$i=$line002"
     done
+    
+    if [[ "$compact_mode" == "1" ]]; then
+        line001="    ████████    "
+        line002="████████████████"
+        
+        for i in $(seq 3 11); do
+            printf -v idx "%02d" "$i"
+            declare -g "line0$idx=$line002"
+        done
+        
+    fi
 }
 
 style4() {
@@ -65,69 +94,48 @@ style4() {
         printf -v idx "%02d" "$i"
         declare -g "line0$idx=████████████████"
     done
+    
+    if [[ "$compact_mode" == "1" ]]; then
+        line001="    ████████    "
+        
+        for i in $(seq 2 4); do
+            printf -v idx "%02d" "$i"
+            declare -g "line0$idx=░░░░░░░░░░░░░░░░"
+        done
+        
+        for i in $(seq 5 8); do
+            printf -v idx "%02d" "$i"
+            declare -g "line0$idx=▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
+        done
+        
+        for i in $(seq 9 11); do
+            printf -v idx "%02d" "$i"
+            declare -g "line0$idx=████████████████"
+        done
+    fi
 }
 
 style5() {
-    ## Compact style
-    line001="    *******    "
-    line002="***************"
+    line001="    ┌──────┐    "
+    line002="┌───┴──────┴───┐"
     
-    for i in $(seq 3 11); do
-        printf -v idx "%02d" "$i"
-        declare -g "line0$idx=$line002"
+    for i in $(seq -w 3 14); do
+        declare -g "line0$i=│  ██████████  │"
     done
     
-    compact_mode=1
-}
-
-style6() {
-    ## Compact style
+    line015="└──────────────┘"
     
-    line001="    :&&&&&&:    "
-    line002=":&&&&&&&&&&&&&&:"
-    
-    for i in $(seq 3 11); do
-        printf -v idx "%02d" "$i"
-        declare -g "line0$idx=$line002"
-    done
-    
-    compact_mode=1
-}
-
-style7() {
-    ## This one need unicode caracthers (Compact style)
-    
-    line001="    ████████    "
-    line002="████████████████"
-    
-    for i in $(seq 3 11); do
-        printf -v idx "%02d" "$i"
-        declare -g "line0$idx=$line002"
-    done
-    
-    compact_mode=1
-}
-
-style8() {
-    ## This one too (Compact style)
-    line001="    ████████    "
-    
-    for i in $(seq 2 4); do
-        printf -v idx "%02d" "$i"
-        declare -g "line0$idx=░░░░░░░░░░░░░░░░"
-    done
-    
-    for i in $(seq 5 8); do
-        printf -v idx "%02d" "$i"
-        declare -g "line0$idx=▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓▓"
-    done
-    
-    for i in $(seq 9 11); do
-        printf -v idx "%02d" "$i"
-        declare -g "line0$idx=████████████████"
-    done
-    
-    compact_mode=1
+    if [[ "$compact_mode" == "1" ]]; then
+        line001="    ┌──────┐    "
+        line002="┌───┴──────┴───┐"
+        
+        for i in $(seq 3 10); do
+            printf -v idx "%02d" "$i"
+            declare -g "line0$idx=│  ██████████  │"
+        done
+        
+        line011="└──────────────┘"
+    fi
 }
 
 ### Data Fetch ###
@@ -136,6 +144,10 @@ BAT_PATH="/sys/class/power_supply/BAT0"
 AC_PATH="/sys/class/power_supply/AC"
 
 data_fetch() {
+    if [[ ! -d "$BAT_PATH" ]]; then
+        echo -e "${RED}Error: Battery not found in $BAT_PATH${NO_COLOR}"
+        exit 1
+    fi
     capacity="$(<"$BAT_PATH/capacity")"
     status="$(<"$BAT_PATH/status")"
     current_now="$(( $(<"$BAT_PATH/current_now") / 1000 ))"
@@ -148,9 +160,8 @@ data_fetch() {
     
     local awk_health_script='BEGIN { printf "%.2f", (full/design)*100 }'
     health="$(awk -v full="$charge_full" -v design="$charge_design" "$awk_health_script")"
+    capacity="39"
 }
-
-data_fetch
 
 ### Functions ###
 
@@ -172,12 +183,12 @@ display_version() {
 }
 
 help_message() {
-    echo "usage: volts [ -v | -s | -h ]"
-    echo "usage: volts [ --version | --style | --help ]"
+    echo "usage: volts [ -v | -s | -h | -c ]"
+    echo "usage: volts [ --version | --style | --help | --compact ]"
     echo -e "\n-s [NUM]     change battery style (available styles: 5)"
     echo -e "-h, --help     show this message again"
-    echo -e "-v, --version  show program version\n"
-    display_version
+    echo -e "-v, --version  show program version"
+    echo -e "-c, --compact  compact style of battery\n"
     exit 0
 }
 
@@ -185,27 +196,29 @@ help_message() {
 
 style="1"
 
-if [[ -n "$args" ]]; then
-    case "$args" in
-        -s|--style)
-            req="$2"
-            case "$req" in
-                1) style="1" ;;
-                2) style="2" ;;
-                3) style="3" ;;
-                4) style="4" ;;
-                5) style="5" ;;
-                6) style="6" ;;
-                7) style="7" ;;
-                8) style="8" ;;
-                *) echo "Invalid style, using default" ;;
-            esac
-        ;;
+while [[ $# -gt 0 ]]; do
+    case "$1" in
         -v|--version) display_version ;;
         -h|--help)    help_message ;;
-        *)            echo "Invalid argument."; exit 1 ;;
+        -c|--compact) compact_mode=1; shift ;;
+        -s|--style)
+            if [[ -n "$2" && "$2" != -* ]]; then
+                case "$2" in
+                    1|2|3|4|5) style="$2" ;;
+                    *) echo "Invalid style, using default (1)" ;;
+                esac
+                shift 2
+            else
+                echo "Error: -s/--style requires a style number."
+                exit 1
+            fi
+        ;;
+        *)
+            echo "Invalid argument: $1"
+            exit 1
+        ;;
     esac
-fi
+done
 
 case "$style" in
     1) style1 ;;
@@ -213,9 +226,6 @@ case "$style" in
     3) style3 ;;
     4) style4 ;;
     5) style5 ;;
-    6) style6 ;;
-    7) style7 ;;
-    8) style8 ;;
 esac
 
 print_ascii() {
@@ -247,6 +257,7 @@ print_ascii() {
     done
 }
 
+data_fetch
 echo
 print_ascii
 echo
