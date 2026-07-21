@@ -1,0 +1,12 @@
+pkgbase = volts
+	pkgdesc = A Simple script for show battery status and info
+	pkgver = 0.1.1
+	pkgrel = 2
+	url = https://github.com/xmlzitos154/volts
+	arch = any
+	license = Unlicense
+	depends = bash
+	source = git+https://github.com/xmlzitos154/volts.git
+	sha256sums = SKIP
+
+pkgname = volts
