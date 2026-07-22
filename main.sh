@@ -2,16 +2,16 @@
 
 ## VOLTS - A Simple script for show laptops battery status
 
-version="0.1.2"
+version="0.1.3"
 
 ### Vars ###
 
-NO_COLOR='\033[0m'
 YELLOW='\033[1;33m'
+NO_COLOR='\033[0m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
-BOLD='\033[1m'
 RED='\033[0;31m'
+BOLD='\033[1m'
 
 compact_mode=0
 
@@ -165,15 +165,15 @@ data_fetch() {
 ### Functions ###
 
 print_status() {
-    echo -e ${YELLOW}"Capacity:          ${CYAN}${capacity}.00%"
-    echo -e ${YELLOW}"AC:                ${CYAN}${ac_status}"
-    echo -e ${YELLOW}"Status:            ${CYAN}${status}"
-    echo -e ${YELLOW}"Current:           ${CYAN}${current_now}.000 mA"
-    echo -e ${YELLOW}"Charge now:        ${CYAN}${charge_now}.000 mAh"
-    echo -e ${YELLOW}"Charge full:       ${CYAN}${charge_full}.000 mAh"
-    echo -e ${YELLOW}"Design capacity:   ${CYAN}${charge_design}.000 mAh"
-    echo -e ${YELLOW}"Battery health:    ${CYAN}${health}%"
-    echo -e ${YELLOW}"Charge cycles:     ${CYAN}${cycles:-0} (or not supported)"
+    echo -e ${CYAN}${BOLD}"- Capacity:         ->   ${YELLOW}${capacity}.00%"
+    echo -e ${CYAN}${BOLD}"- AC:               ->   ${YELLOW}${ac_status}"
+    echo -e ${CYAN}${BOLD}"- Status:           ->   ${YELLOW}${status}"
+    echo -e ${CYAN}${BOLD}"- Current:          ->   ${YELLOW}${current_now}.000 mA"
+    echo -e ${CYAN}${BOLD}"- Charge now:       ->   ${YELLOW}${charge_now}.000 mAh"
+    echo -e ${CYAN}${BOLD}"- Charge full:      ->   ${YELLOW}${charge_full}.000 mAh"
+    echo -e ${CYAN}${BOLD}"- Design capacity:  ->   ${YELLOW}${charge_design}.000 mAh"
+    echo -e ${CYAN}${BOLD}"- Battery health:   ->   ${YELLOW}${health}%"
+    echo -e ${CYAN}${BOLD}"- Charge cycles:    ->   ${YELLOW}${cycles:-0} (or not supported)"
 }
 
 display_version() {
@@ -182,11 +182,12 @@ display_version() {
 }
 
 help_message() {
-    echo "usage: volts [ -v | -s | -h | -c ]"
-    echo "usage: volts [ --version | --style | --help | --compact ]"
+    echo "usage: volts [ -v | -s | -h | -c | -w ]"
+    echo "usage: volts [ --version | --style | --help | --compact | --watch ]"
     echo -e "\n-s [NUM]     change battery style (available styles: 5)"
     echo -e "-h, --help     show this message again"
     echo -e "-v, --version  show program version"
+    echo -e "-w, --watch    Show real-time battery info (CTRL+C to stop)"
     echo -e "-c, --compact  compact style of battery\n"
     exit 0
 }
@@ -194,12 +195,14 @@ help_message() {
 ### Execution ###
 
 style="1"
+watch_mode="false"
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         -v|--version) display_version ;;
         -h|--help)    help_message ;;
         -c|--compact) compact_mode=1; shift ;;
+        -w|--watch)   watch_mode="true"; shift ;;
         -s|--style)
             if [[ -n "$2" && "$2" != -* ]]; then
                 case "$2" in
@@ -257,7 +260,23 @@ print_ascii() {
 }
 
 data_fetch
-echo
-print_ascii
-echo
-print_status
+
+if [[ "$watch_mode" == "false" ]]; then
+    echo
+    print_ascii
+    echo
+    print_status
+    elif [[ "$watch_mode" == "true" ]]; then
+    tput civis
+    trap 'tput cnorm; clear; exit 0' SIGINT
+    tput clear
+    while true; do
+        tput cup 0 0
+        data_fetch
+        echo
+        print_ascii
+        echo
+        print_status
+        sleep 1
+    done
+fi
