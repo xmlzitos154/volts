@@ -63,6 +63,11 @@ paru -S volts
 
 ---
 
+### Copyright:
+volts is licensed under the MIT License.
+
+---
+
 Developed with <3 by xml.dev
 
 version: **0.1.3** (beta)
